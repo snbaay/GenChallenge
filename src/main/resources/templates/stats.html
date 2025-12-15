@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>GenChallenge - Statistics</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .chart-container {
+            height: 200px;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 10px;
+            padding: 0 1rem;
+        }
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--primary-color), #7c3aed);
+            border-radius: 4px 4px 0 0;
+            min-height: 20px;
+            transition: height 0.5s ease;
+        }
+        .bar-label {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .insight-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .insight-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid;
+        }
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #a7f3d0;
+        }
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fde68a;
+        }
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-color: #93c5fd;
+        }
+
+        /* Цвета для типов и сложности */
+        .health-bar { background: linear-gradient(to top, #10b981, #34d399); }
+        .study-bar { background: linear-gradient(to top, #3b82f6, #60a5fa); }
+        .productivity-bar { background: linear-gradient(to top, #f59e0b, #fbbf24); }
+        .habit-bar { background: linear-gradient(to top, #8b5cf6, #a78bfa); }
+        .random-bar { background: linear-gradient(to top, #6366f1, #818cf8); }
+
+        .easy-bar { background: linear-gradient(to top, #10b981, #34d399); }
+        .medium-bar { background: linear-gradient(to top, #f59e0b, #fbbf24); }
+        .hard-bar { background: linear-gradient(to top, #ef4444, #f87171); }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header class="main-header">
+    <div class="header-content">
+        <div class="logo">
+            <div>
+                <h1>GenChallenge</h1>
+                <p class="tagline">Challenge Analytics</p>
+            </div>
+        </div>
+        <nav class="nav-links">
+            <a th:href="@{/}" class="nav-link">
+                <i class="fas fa-bullseye"></i> Today
+            </a>
+            <a th:href="@{/history}" class="nav-link">
+                <i class="fas fa-history"></i> History
+            </a>
+            <a href="#" class="nav-link active">
+                <i class="fas fa-chart-bar"></i> Stats
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <div style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chart-pie" style="color: var(--primary-color);"></i> Challenge Statistics
+                </h2>
+                <p style="color: var(--text-secondary);">
+                    Analytics about your progress and performance
+                </p>
+            </div>
+            <a th:href="@{/}" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-arrow-left"></i> Back to Today
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Stats -->
+    <div class="card">
+        <h3 class="card-title" style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-chart-line" style="color: var(--primary-color);"></i> Overview
+        </h3>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${total}">0</div>
+                <div class="stat-label">Total Challenges</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${completed}">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${pending}">0</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${#numbers.formatDecimal(completionRate, 1, 0)} + '%'">0%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+
+        <!-- Completion Progress Bar -->
+        <div style="margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-weight: 500;">Overall Completion Rate</span>
+                <span style="font-weight: 600;" th:text="${#numbers.formatDecimal(completionRate, 1, 0)} + '%'">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" th:style="'width: ' + ${completionRate} + '%;'"></div>
+            </div>
+
+            <!-- Feedback based on completion rate -->
+            <div style="margin-top: 1rem;">
+                <th:block th:if="${total > 0}">
+                    <th:block th:if="${completionRate >= 80}">
+                            <span class="badge badge-success" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-trophy"></i> Excellent! Keep it up!
+                            </span>
+                    </th:block>
+                    <th:block th:if="${completionRate >= 50 and completionRate < 80}">
+                            <span class="badge badge-warning" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-thumbs-up"></i> Good progress! You're doing well.
+                            </span>
+                    </th:block>
+                    <th:block th:if="${completionRate < 50}">
+                            <span class="badge badge-info" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-rocket"></i> Keep going! Every challenge counts.
+                            </span>
+                    </th:block>
+                </th:block>
+                <th:block th:if="${total == 0}">
+                        <span class="badge" style="background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-info-circle"></i> Start generating challenges to see stats
+                        </span>
+                </th:block>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights Grid -->
+    <div class="insight-grid">
+        <!-- Last 30 Days -->
+        <div class="insight-card">
+            <h4 style="margin-bottom: 1rem; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-calendar-alt" style="color: var(--primary-color);"></i> Last 30 Days
+            </h4>
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <div class="stat-number" th:text="${last30Total}">0</div>
+                <div class="stat-label">challenges created</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2rem; font-weight: 600; color: var(--success-color);" th:text="${last30Completed}">0</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">completed</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.2rem; font-weight: 600; color: var(--primary-color);" th:text="${#numbers.formatDecimal(last30Rate, 1, 0)} + '%'">0%</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">completion rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Duration -->
+        <div class="insight-card">
+            <h4 style="margin-bottom: 1rem; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-clock" style="color: var(--primary-color);"></i> Average Duration
+            </h4>
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <div class="stat-number" th:text="${#numbers.formatDecimal(avgDuration, 0, 0)}">0</div>
+                <div class="stat-label">minutes per challenge</div>
+            </div>
+            <small style="color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-lightbulb"></i>
+                Optimal challenge length is 20-45 minutes
+            </small>
+        </div>
+
+        <!-- Most Popular -->
+        <div class="insight-card">
+            <h4 style="margin-bottom: 1rem; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-crown" style="color: var(--primary-color);"></i> Most Popular
+            </h4>
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <div class="stat-number" th:text="${mostPopularType}">None</div>
+                <div class="stat-label">challenge type</div>
+            </div>
+            <small style="color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-star"></i>
+                Your most frequently selected category
+            </small>
+        </div>
+    </div>
+
+    <!-- Distribution Charts -->
+    <div class="card">
+        <h3 class="card-title" style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-chart-bar" style="color: var(--primary-color);"></i> Distribution
+        </h3>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 3rem; margin-top: 1.5rem;">
+            <!-- By Type -->
+            <div>
+                <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Challenges by Type</h4>
+                <div class="chart-container">
+                    <div class="bar-chart">
+                        <div th:each="entry : ${byType}"
+                             th:class="${entry.key == 'HEALTH'} ? 'bar health-bar' :
+                                          (${entry.key == 'STUDY'} ? 'bar study-bar' :
+                                          (${entry.key == 'PRODUCTIVITY'} ? 'bar productivity-bar' :
+                                          (${entry.key == 'HABIT'} ? 'bar habit-bar' : 'bar random-bar')))"
+                             th:style="'height: ' + ${total > 0 ? (entry.value * 100 / total) : 0} + '%;'">
+                        </div>
+                    </div>
+                    <div class="bar-chart" style="height: auto; margin-top: 10px;">
+                        <div th:each="entry : ${byType}" class="bar-label" th:text="${entry.key}">TYPE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- By Difficulty -->
+            <div>
+                <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Challenges by Difficulty</h4>
+                <div class="chart-container">
+                    <div class="bar-chart">
+                        <div th:each="entry : ${byDifficulty}"
+                             th:class="${entry.key == 'EASY'} ? 'bar easy-bar' :
+                                          (${entry.key == 'MEDIUM'} ? 'bar medium-bar' : 'bar hard-bar')"
+                             th:style="'height: ' + ${total > 0 ? (entry.value * 100 / total) : 0} + '%;'">
+                        </div>
+                    </div>
+                    <div class="bar-chart" style="height: auto; margin-top: 10px;">
+                        <div th:each="entry : ${byDifficulty}" class="bar-label" th:text="${entry.key}">DIFFICULTY</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; justify-content: center; gap: 1rem; margin-top: 3rem; margin-bottom: 2rem;">
+        <a th:href="@{/}" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-plus"></i> New Challenge
+        </a>
+        <a th:href="@{/history}" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-history"></i> View History
+        </a>
+    </div>
+</main>
+
+<footer style="text-align: center; padding: 2rem; color: var(--text-secondary); margin-top: 2rem; border-top: 1px solid var(--border-color);">
+    <p style="font-size: 0.9rem;">GenChallenge © 2024</p>
+    <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.8;">Daily productivity challenges for consistent growth</p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate bars
+        const bars = document.querySelectorAll('.bar');
+        bars.forEach(bar => {
+            const height = bar.style.height;
+            bar.style.height = '0%';
+            setTimeout(() => {
+                bar.style.height = height;
+            }, 300);
+        });
+
+        // Animate progress bars
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 500);
+        });
+    });
+</script>
+</body>
+</html>
