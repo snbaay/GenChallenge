@@ -7,183 +7,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        .history-item {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            transition: transform 0.2s, box-shadow 0.2s;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .history-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-color: var(--primary-color);
-        }
-
-        .history-item.completed {
-            border-left: 4px solid var(--success-color);
-            background-color: #f0fdf4;
-        }
-
-        .history-item.pending {
-            border-left: 4px solid var(--warning-color);
-            background-color: #fffbeb;
-        }
-
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
-
-        .item-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .item-date {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .item-meta {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .meta-item i {
-            color: var(--primary-color);
-            width: 16px;
-        }
-
-        .item-description {
-            color: var(--text-primary);
-            line-height: 1.5;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .status-completed {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-secondary);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: #cbd5e1;
-            margin-bottom: 1rem;
-        }
-
-        .empty-state h3 {
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .empty-state p {
-            max-width: 400px;
-            margin: 0 auto 1.5rem;
-        }
-
-        .filters {
-            display: flex;
-            gap: 1rem;
-            margin: 1.5rem 0;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            background: white;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .filter-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .filter-btn.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
+        .history-list { display:flex; flex-direction:column; gap:1rem; margin:2rem 0; }
+        .history-item { background:var(--card-bg); border-radius:var(--radius); padding:1.5rem;
+            border:1px solid var(--border-color); transition:transform .2s, box-shadow .2s; animation:fadeIn .5s ease; }
+        .history-item:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.1); border-color:var(--primary-color); }
+        .history-item.completed { border-left:4px solid var(--success-color); background-color:#f0fdf4; }
+        .history-item.pending { border-left:4px solid var(--warning-color); background-color:#fffbeb; }
+        .item-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
+        .item-title { font-size:1.125rem; font-weight:600; color:var(--text-primary); margin-bottom:.5rem; }
+        .item-date { color:var(--text-secondary); font-size:.875rem; }
+        .item-meta { display:flex; gap:1.5rem; margin-bottom:1rem; flex-wrap:wrap; }
+        .meta-item { display:flex; align-items:center; gap:6px; color:var(--text-secondary); font-size:.875rem; }
+        .meta-item i { color:var(--primary-color); width:16px; }
+        .item-description { color:var(--text-primary); line-height:1.5; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-color); }
+        .status-badge { padding:6px 12px; border-radius:20px; font-size:.75rem; font-weight:500; display:inline-flex; align-items:center; gap:5px; }
+        .status-completed { background-color:#d1fae5; color:#065f46; }
+        .status-pending { background-color:#fef3c7; color:#92400e; }
+        .empty-state { text-align:center; padding:4rem 2rem; color:var(--text-secondary); }
+        .empty-state i { font-size:3rem; color:#cbd5e1; margin-bottom:1rem; }
+        .empty-state h3 { margin-bottom:.5rem; color:var(--text-primary); font-weight:600; }
+        .empty-state p { max-width:400px; margin:0 auto 1.5rem; }
+        .filters { display:flex; gap:1rem; margin:1.5rem 0; flex-wrap:wrap; }
+        .filter-btn { padding:8px 16px; border-radius:6px; background:white; border:1px solid var(--border-color);
+            color:var(--text-secondary); font-weight:500; font-size:.9rem; cursor:pointer; transition:all .2s; }
+        .filter-btn:hover { border-color:var(--primary-color); color:var(--primary-color); }
+        .filter-btn.active { background:var(--primary-color); color:white; border-color:var(--primary-color); }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
     </style>
 </head>
 <body>
-<!-- Header -->
+
 <header class="main-header">
     <div class="header-content">
         <div class="logo">
@@ -213,8 +66,13 @@
                 <h2 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1.5rem; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-history" style="color: var(--primary-color);"></i> Challenge History
                 </h2>
-                <p style="color: var(--text-secondary);">
-                    All your completed and pending challenges
+                <p style="color: var(--text-secondary);">All your completed and pending challenges</p>
+
+                <!-- ✅ small stats line -->
+                <p style="margin-top: .5rem; color: var(--text-secondary); font-size: .9rem;">
+                    Total: <b th:text="${total}">0</b> |
+                    Completed: <b th:text="${completed}">0</b> |
+                    Success: <b th:text="${successRate} + '%'">0%</b>
                 </p>
             </div>
             <a th:href="@{/}" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
@@ -223,7 +81,6 @@
         </div>
     </div>
 
-    <!-- Filters -->
     <div class="filters">
         <button class="filter-btn active" onclick="filterChallenges('all')">All Challenges</button>
         <button class="filter-btn" onclick="filterChallenges('completed')">Completed</button>
@@ -231,15 +88,12 @@
         <button class="filter-btn" onclick="filterChallenges('recent')">Recent</button>
     </div>
 
-    <!-- History List -->
-    <!-- History List -->
-    <div th:if="${challenges != null and not challenges.empty}">
-        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">
-            Your Challenge History
-        </h3>
+    <!-- ✅ FIX: records instead of challenges -->
+    <div th:if="${records != null and not records.empty}">
+        <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Your Challenge History</h3>
 
         <div class="history-list">
-            <div th:each="record, stat : ${challenges}"
+            <div th:each="record, stat : ${records}"
                  class="history-item"
                  th:classappend="${record.completed} ? 'completed' : 'pending'"
                  th:attr="data-status=${record.completed} ? 'completed' : 'pending', data-type=${record.type}"
@@ -250,7 +104,6 @@
                         <div class="item-title" th:text="${record.title}">Challenge Title</div>
                         <div class="item-date">
                             <i class="far fa-calendar"></i>
-                            <!-- Без форматирования вообще -->
                             <span>[[${record.date}]]</span>
                         </div>
                     </div>
@@ -270,7 +123,6 @@
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-clock"></i>
-                        <!-- durationMinutes -->
                         <span th:text="${record.durationMinutes} + ' min'">Duration</span>
                     </div>
                     <div class="meta-item">
@@ -283,13 +135,29 @@
                     <span th:text="${record.description}">Challenge description...</span>
                 </div>
 
-                <!-- В DailyRecordEntity нет completedDate, так что убираем -->
+                <!-- ✅ Actions -->
+                <div style="margin-top: 1rem; display: flex; gap: 10px;">
+                    <form th:action="@{'/history/complete/' + ${record.id}}" method="post">
+                        <button type="submit"
+                                class="btn btn-primary"
+                                th:disabled="${record.completed}">
+                            <i class="fas fa-check"></i> Complete
+                        </button>
+                    </form>
+
+                    <form th:action="@{'/history/delete/' + ${record.id}}" method="post">
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
 
-    <!-- Empty State -->
-    <div th:if="${challenges == null or challenges.empty}" class="empty-state">
+    <!-- ✅ FIX: records instead of challenges -->
+    <div th:if="${records == null or records.empty}" class="empty-state">
         <i class="far fa-calendar-times"></i>
         <h3>No challenges yet</h3>
         <p>You haven't created any challenges yet. Start your productivity journey today!</p>
@@ -305,14 +173,12 @@
 </footer>
 
 <script>
-    // Filter challenges
     function filterChallenges(filter) {
         const buttons = document.querySelectorAll('.filter-btn');
         buttons.forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
 
         const items = document.querySelectorAll('.history-item');
-
         items.forEach(item => {
             const status = item.getAttribute('data-status');
 
@@ -327,37 +193,11 @@
                     item.style.display = status === 'pending' ? 'block' : 'none';
                     break;
                 case 'recent':
-                    // Show last 7 days
                     item.style.display = 'block';
                     break;
             }
         });
     }
-
-    // Animate items on load
-    document.addEventListener('DOMContentLoaded', function() {
-        const items = document.querySelectorAll('.history-item');
-        items.forEach((item, index) => {
-            item.style.opacity = '0';
-            item.style.transform = 'translateY(20px)';
-
-            setTimeout(() => {
-                item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                item.style.opacity = '1';
-                item.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-
-        // Add click animation
-        items.forEach(item => {
-            item.addEventListener('click', function() {
-                this.style.transform = 'scale(0.98)';
-                setTimeout(() => {
-                    this.style.transform = '';
-                }, 200);
-            });
-        });
-    });
 </script>
 </body>
 </html>

@@ -6,6 +6,131 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ✅ ADDED: nice toggle UI (matches your theme variables) -->
+    <style>
+        .option-group{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            margin-top:12px;
+        }
+
+        .toggle-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:10px 12px;
+            border:1px solid var(--border-color);
+            border-radius:10px;
+            background:#fff;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .12s ease;
+        }
+
+        .toggle-row:hover{
+            border-color: var(--primary-color);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            transform: translateY(-1px);
+        }
+
+        .toggle-text{
+            display:flex;
+            align-items:flex-start;
+            gap:10px;
+            color:var(--text-primary);
+        }
+
+        .toggle-title{
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+
+        .toggle-sub{
+            display:block;
+            margin-top:3px;
+            color:var(--text-secondary);
+            font-weight:500;
+            font-size:0.82rem;
+            line-height: 1.25;
+        }
+
+        /* Hide native checkbox */
+        .toggle-row input[type="checkbox"]{
+            position:absolute;
+            opacity:0;
+            width:0;
+            height:0;
+        }
+
+        /* Switch */
+        .switch{
+            width:46px;
+            height:26px;
+            background:#e2e8f0;
+            border-radius:999px;
+            position:relative;
+            transition: all .2s ease;
+            flex:0 0 auto;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+        }
+
+        .switch::after{
+            content:"";
+            width:20px;
+            height:20px;
+            background:#fff;
+            border-radius:50%;
+            position:absolute;
+            top:3px;
+            left:3px;
+            transition: all .2s ease;
+            box-shadow:0 2px 6px rgba(0,0,0,0.18);
+        }
+
+        .toggle-row input[type="checkbox"]:checked + .switch{
+            background: var(--primary-color);
+        }
+
+        .toggle-row input[type="checkbox"]:checked + .switch::after{
+            left:23px;
+        }
+
+        .toggle-control{
+            position:relative;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .toggle-pill{
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            background: #fff;
+        }
+
+        .toggle-row input[type="checkbox"]:checked ~ .toggle-pill{
+            color: var(--primary-color);
+            border-color: rgba(99,102,241,0.35);
+            background: rgba(99,102,241,0.08);
+        }
+
+        /* make Mode select look consistent */
+        .mini-select{
+            width: 100%;
+            margin-top: 6px;
+        }
+        .mini-label{
+            margin-top: 10px;
+            display:block;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+    </style>
 </head>
 <body>
 <!-- Header -->
@@ -105,6 +230,49 @@
                                     th:value="${t}"
                                     th:text="${t}"></option>
                         </select>
+
+                        <!-- ✅ Mode (kept, but styled a bit) -->
+                        <span class="mini-label">Mode</span>
+                        <select name="mode" class="select-input mini-select">
+                            <option value="RANDOM_TEMPLATE">Random template</option>
+                            <option value="BALANCED_TEMPLATE">Balanced (rare type)</option>
+                        </select>
+
+                        <!-- ✅ NEW: toggles styled -->
+                        <div class="option-group">
+
+                            <label class="toggle-row">
+                                <div class="toggle-text">
+                                    <i class="fas fa-clock" style="color: var(--primary-color); margin-top:2px;"></i>
+                                    <div>
+                                        <div class="toggle-title">Add timer</div>
+                                        <span class="toggle-sub">Adds time hint into description</span>
+                                    </div>
+                                </div>
+
+                                <div class="toggle-control">
+                                    <input type="checkbox" name="addTimer" value="true">
+                                    <span class="switch"></span>
+                                </div>
+                            </label>
+
+                            <label class="toggle-row">
+                                <div class="toggle-text">
+                                    <i class="fas fa-fire" style="color: var(--primary-color); margin-top:2px;"></i>
+                                    <div>
+                                        <div class="toggle-title">Add motivation</div>
+                                        <span class="toggle-sub">Adds short motivational line</span>
+                                    </div>
+                                </div>
+
+                                <div class="toggle-control">
+                                    <input type="checkbox" name="addMotivation" value="true">
+                                    <span class="switch"></span>
+
+                                </div>
+                            </label>
+
+                        </div>
                     </div>
 
                     <div class="form-group">

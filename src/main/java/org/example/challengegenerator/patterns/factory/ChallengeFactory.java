@@ -1,9 +1,8 @@
 package org.example.challengegenerator.patterns.factory;
 
 import org.example.challengegenerator.models.Challenge;
-import org.example.challengegenerator.models.ChallengeType;
-import org.example.challengegenerator.models.Difficulty;
+import org.example.challengegenerator.models.ChallengeTemplateEntity;
 
 public interface ChallengeFactory {
-    Challenge createChallenge(ChallengeType type, Difficulty difficulty);
+    Challenge fromTemplate(ChallengeTemplateEntity template);
 }

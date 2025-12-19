@@ -64,8 +64,7 @@ public class HistoryService {
     }
 
     public long getCompletedCount() {
-        return dailyRecordRepository.findAll().stream()
-                .filter(DailyRecordEntity::isCompleted)
-                .count();
+        return dailyRecordRepository.countByCompletedTrue();
     }
+
 }

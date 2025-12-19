@@ -1,7 +1,9 @@
 package org.example.challengegenerator.controller;
 
+import org.example.challengegenerator.models.Challenge;
 import org.example.challengegenerator.models.ChallengeType;
 import org.example.challengegenerator.models.Difficulty;
+import org.example.challengegenerator.models.GenerationMode;
 import org.example.challengegenerator.service.ChallengeAppFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,7 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 @Controller
 public class ChallengeViewController {
 
@@ -27,14 +28,25 @@ public class ChallengeViewController {
 
     @PostMapping("/generate")
     public String generateToday(@RequestParam ChallengeType type,
-                                @RequestParam Difficulty difficulty) {
-        facade.generateTodayChallenge(type, difficulty);
+                                @RequestParam Difficulty difficulty,
+                                @RequestParam(defaultValue = "RANDOM_TEMPLATE") GenerationMode mode,
+                                @RequestParam(defaultValue = "false") boolean addTimer,
+                                @RequestParam(defaultValue = "false") boolean addMotivation,
+                                Model model) {
+
+        // ✅ было facade.generateToday(...)
+        // ✅ стало facade.generate(...)
+        facade.generate(type, difficulty, mode, addTimer, addMotivation);
+
+        // Возвращаемся на /, чтобы home снова заполнил модель одинаково
         return "redirect:/";
     }
 
     @PostMapping("/generate-daily")
     public String generateDaily() {
-        facade.generateDailyChallenge();
+        // ✅ было facade.generateDailyChallenge()
+        // ✅ стало facade.generateDaily()
+        facade.generateDaily();
         return "redirect:/";
     }
 
@@ -43,11 +55,4 @@ public class ChallengeViewController {
         facade.completeTodayChallenge();
         return "redirect:/";
     }
-
-    // УДАЛИ ЭТОТ МЕТОД - теперь его обрабатывает HistoryController
-    // @GetMapping("/history")
-    // public String history(Model model) {
-    //     model.addAttribute("records", facade.getAllHistory());
-    //     return "history";
-    // }
 }

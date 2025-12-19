@@ -18,4 +18,6 @@ public interface DailyRecordRepository extends JpaRepository<DailyRecordEntity, 
 
     // История
     List<DailyRecordEntity> findAllByOrderByDateDesc();
+    long countByCompletedTrue();
+
 }

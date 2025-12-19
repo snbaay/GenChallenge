@@ -1,14 +1,15 @@
 package org.example.challengegenerator.service;
 
-import org.example.challengegenerator.models.Challenge;
-import org.example.challengegenerator.models.ChallengeType;
-import org.example.challengegenerator.models.DailyRecordEntity;
-import org.example.challengegenerator.models.Difficulty;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.challengegenerator.models.*;
+import org.example.challengegenerator.patterns.decorator.MotivationDecorator;
+import org.example.challengegenerator.patterns.decorator.TimerDecorator;
+import org.example.challengegenerator.patterns.factory.ChallengeFactory;
+import org.example.challengegenerator.patterns.strategy.BalancedTemplateStrategy;
+import org.example.challengegenerator.patterns.strategy.RandomTemplateStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @Service
 public class ChallengeAppFacade {
@@ -16,43 +17,64 @@ public class ChallengeAppFacade {
     private final ChallengeService challengeService;
     private final HistoryService historyService;
 
-    @Autowired
-    public ChallengeAppFacade(ChallengeService challengeService, HistoryService historyService) {
+    private final RandomTemplateStrategy randomTemplateStrategy;
+    private final BalancedTemplateStrategy balancedTemplateStrategy;
+
+    // ВАЖНО: зависим от интерфейса (SOLID: DIP), а не от конкретного класса
+    private final ChallengeFactory templateFactory;
+
+    public ChallengeAppFacade(ChallengeService challengeService,
+                              HistoryService historyService,
+                              RandomTemplateStrategy randomTemplateStrategy,
+                              BalancedTemplateStrategy balancedTemplateStrategy,
+                              ChallengeFactory templateFactory) {
         this.challengeService = challengeService;
         this.historyService = historyService;
+        this.randomTemplateStrategy = randomTemplateStrategy;
+        this.balancedTemplateStrategy = balancedTemplateStrategy;
+        this.templateFactory = templateFactory;
     }
 
-    // Все методы должны использовать DailyRecordRepository напрямую
-    // или через HistoryService, но с правильной логикой
-
+    // ✅ Основной сценарий генерации, его будет дергать кнопка /generate
     @Transactional
-    public DailyRecordEntity generateWithFactory(ChallengeType type, Difficulty difficulty) {
-        Challenge challenge = challengeService.generateWithFactory(type, difficulty);
-        return historyService.saveChallengeAsRecord(challenge);
+    public DailyRecordEntity generate(ChallengeType type,
+                                      Difficulty difficulty,
+                                      GenerationMode mode,
+                                      boolean addTimer,
+                                      boolean addMotivation) {
+
+        ChallengeTemplateEntity template = switch (mode) {
+            case BALANCED_TEMPLATE -> balancedTemplateStrategy.pickTemplate(type, difficulty);
+            default -> randomTemplateStrategy.pickTemplate(type, difficulty);
+        };
+
+        Challenge ch;
+        if (template != null) {
+            ch = templateFactory.fromTemplate(template);
+        } else {
+            // fallback если шаблонов нет (чтобы не ломалось)
+            ch = buildFallbackChallenge(type, difficulty);
+        }
+
+        if (addTimer) ch = new TimerDecorator(ch).build();
+        if (addMotivation) ch = new MotivationDecorator(ch).build();
+
+        Challenge saved = challengeService.saveChallenge(ch);
+        return historyService.saveChallengeAsRecord(saved);
+
     }
 
+    // ✅ Daily кнопка (/generate-daily): не зависит от ChallengeService
     @Transactional
-    public DailyRecordEntity generateWithStrategy(ChallengeType type, Difficulty difficulty) {
-        Challenge challenge = challengeService.generateWithStrategy(type, difficulty);
-        return historyService.saveChallengeAsRecord(challenge);
-    }
+    public DailyRecordEntity generateDaily() {
+        ChallengeType dailyType = computeDailyType();
+        Difficulty dailyDifficulty = computeDailyDifficulty();
 
-    @Transactional
-    public DailyRecordEntity generateWithDecorator(ChallengeType type, Difficulty difficulty) {
-        Challenge challenge = challengeService.generateWithDecorator(type, difficulty);
-        return historyService.saveChallengeAsRecord(challenge);
-    }
-
-    @Transactional
-    public DailyRecordEntity generateDailyChallenge() {
-        Challenge challenge = challengeService.generateDailyChallenge();
-        return historyService.saveChallengeAsRecord(challenge);
-    }
-
-    @Transactional
-    public DailyRecordEntity generateTodayChallenge(ChallengeType type, Difficulty difficulty) {
-        Challenge challenge = challengeService.generateWithFactory(type, difficulty);
-        return historyService.saveChallengeAsRecord(challenge);
+        // например: daily всегда random + timer
+        return generate(dailyType, dailyDifficulty,
+                GenerationMode.RANDOM_TEMPLATE,
+                true,
+                false);
     }
 
     public DailyRecordEntity getTodayRecord() {
@@ -64,22 +86,57 @@ public class ChallengeAppFacade {
         historyService.markTodayCompleted();
     }
 
-    public List<DailyRecordEntity> getAllHistory() {
+    // История
+    public java.util.List<DailyRecordEntity> getAllHistory() {
         return historyService.getAllHistory();
     }
 
-    // РЕАЛЬНЫЕ МЕТОДЫ ДЛЯ HistoryController
     @Transactional
     public DailyRecordEntity markAsCompleted(Long recordId) {
         return historyService.markRecordAsCompleted(recordId);
     }
 
     @Transactional
-    public void deleteChallenge(Long recordId) {
+    public void deleteRecord(Long recordId) {
         historyService.deleteRecord(recordId);
     }
 
-    // Дополнительный метод для статистики
+    // --- helpers ---
+
+    private Challenge buildFallbackChallenge(ChallengeType type, Difficulty difficulty) {
+        Challenge ch = new Challenge();
+        ch.setType(type);
+        ch.setDifficulty(difficulty);
+
+        // простая логика, чтобы всегда что-то сгенерировать
+        ch.setTitle(type + " Challenge (" + difficulty + ")");
+        ch.setDescription("Generated without templates (fallback).");
+
+        ch.setDurationMinutes(switch (difficulty) {
+            case EASY -> 10;
+            case MEDIUM -> 20;
+            case HARD -> 30;
+        });
+
+        return ch;
+    }
+
+    private ChallengeType computeDailyType() {
+        int day = LocalDate.now().getDayOfWeek().getValue();
+        return switch (day) {
+            case 1, 5 -> ChallengeType.HEALTH;
+            case 2, 6 -> ChallengeType.STUDY;
+            case 3 -> ChallengeType.PRODUCTIVITY;
+            default -> ChallengeType.HABIT;
+        };
+    }
+
+    private Difficulty computeDailyDifficulty() {
+        int dayOfMonth = LocalDate.now().getDayOfMonth();
+        if (dayOfMonth <= 10) return Difficulty.EASY;
+        if (dayOfMonth <= 20) return Difficulty.MEDIUM;
+        return Difficulty.HARD;
+    }
     public long getTotalChallengesCount() {
         return historyService.getTotalCount();
     }
@@ -87,4 +144,5 @@ public class ChallengeAppFacade {
     public long getCompletedChallengesCount() {
         return historyService.getCompletedCount();
     }
+
 }

@@ -259,7 +259,7 @@
                                           (${entry.key == 'STUDY'} ? 'bar study-bar' :
                                           (${entry.key == 'PRODUCTIVITY'} ? 'bar productivity-bar' :
                                           (${entry.key == 'HABIT'} ? 'bar habit-bar' : 'bar random-bar')))"
-                             th:style="'height: ' + ${total > 0 ? (entry.value * 100 / total) : 0} + '%;'">
+                             th:style="'height: ' + ${total > 0 ? (entry.value * 100.0 / total) : 0} + '%;'">
                         </div>
                     </div>
                     <div class="bar-chart" style="height: auto; margin-top: 10px;">
@@ -276,7 +276,7 @@
                         <div th:each="entry : ${byDifficulty}"
                              th:class="${entry.key == 'EASY'} ? 'bar easy-bar' :
                                           (${entry.key == 'MEDIUM'} ? 'bar medium-bar' : 'bar hard-bar')"
-                             th:style="'height: ' + ${total > 0 ? (entry.value * 100 / total) : 0} + '%;'">
+                             th:style="'height: ' + ${total > 0 ? (entry.value * 100.0 / total) : 0} + '%;'">
                         </div>
                     </div>
                     <div class="bar-chart" style="height: auto; margin-top: 10px;">
